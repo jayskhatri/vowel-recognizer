@@ -56,21 +56,16 @@ void raisedSinWindow(){
 	}
 }
 
-//for applying the hamming window on Steady frame samples
-double hammingWindow(int k){
-	return (0.54-0.46*cos(2*PI*k/N-1));
-}
-
-//function for applying hamming window
+//function for applying hamming window to all the stable frames
 void applyHammingWindow(){
 	for(int i=0; i<F; ++i){
 		for(int j=0; j<N; ++j){
-			steadyFrames[i][j] *= hammingWindow(steadyFrames[i][j]);
+			steadyFrames[i][j] *= 0.54-0.46*cos(2*PI*steadyFrames[i][j]/N-1);
 		}
 	}
 }
 
-//storing the values of C to 2D matrix Ci
+//storing the values of C to 3D matrix Ci
 void storeCito3D(){
 	//saving ci values to 3D matrix
 	for(int f=0; f<F; f++){
@@ -211,7 +206,7 @@ double getDCShift(char *filename){
 }
 
 //function to setup the global variable like, max and nFactor
-//max and nFactor depends on the main yes/no word file and are used to do the normalization
+//max and nFactor depends on the vowel recording file and are used to do the normalization
 void setupGlobal(char *filename){
     FILE *fp;
     long int totalSample = 0;
@@ -248,12 +243,17 @@ void framesMarker(){
 	enSize = 0;
 	//calculating the ste and marking the highest energy index
 	while(totalSample < xSize){
+		//if the n is equal to N than we have to store energy to the array
 		if(n == N){
+			//taking average
 			en /= N;
-
+			
+			//checking whether it is max energy frame?
 			if(m < en) m = en, max_i = enSize;
 
-			energy[enSize++] = en;
+			energy[enSize++] = en; //store the energy value
+			
+			//resetting en and n to count for the next frame
 			en = 0;
 			n = 0;
 		}
@@ -320,6 +320,7 @@ void training(){
 		for(int j = 0; j<10; j++){//loop over files
 			//read file
 			read_file(filenames[i]);
+			//next file
 			filenames[i][21]++;
 		}
 	}
@@ -383,7 +384,7 @@ void testing(){
 	//whether user wants to see the tokhura distance or not
 	int choice;
 	printf("testing of text files has started\n");
-	printf("Do you want to see the report of all the tokhura weights? 1- yes | 0-no. ");
+	printf("Do you want to see the report of all the tokhura weights? (1- yes | 0-no) - ");
 	scanf("%d", &choice);
 
 	for(int vl = 0; vl<5; vl++){
